@@ -282,16 +282,16 @@ void loop()
         watch->tft->print(step);
 
         watch->tft->setCursor(45, 100);
-        if (distance < 1000) {
+        /*if (distance < 1000) {
             watch->tft->print("Dist: ");
             watch->tft->print(distance);
             watch->tft->print("m");
         }
-        else if (distance > 1000) {
+        else if (distance > 1000) {*/
             watch->tft->print("Dist: ");
             watch->tft->print(distance/1000);  
             watch->tft->print("km");         
-        }
+        //}
         
         last = millis();
         updateTimeout = 0;
@@ -306,8 +306,8 @@ void loop()
             } while (!rlst);
             // Check if it is a step interrupt
             if (sensor->isStepCounter()) {
-                //step = sensor->getCounter();
-                step++;
+                step = sensor->getCounter();
+                //step++;
                 distance = step * steplen;
                 
             }
@@ -327,8 +327,11 @@ void loop()
     }
     case 4:
     {
-        //Save hiking session data
         step = 0;
+        distance = 0;
+        sensor->resetStepCounter();
+        
+        //Save hiking session data
         saveIdToFile(sessionId);
         saveStepsToFile(step);
         saveDistanceToFile(distance);
