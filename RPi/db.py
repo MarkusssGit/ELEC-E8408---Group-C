@@ -39,8 +39,8 @@ class HubDatabase:
         self.con = sqlite3.connect(DB_FILE_NAME, check_same_thread=False)
         self.cur = self.con.cursor()
 
-        for t in (DB_SESSION_TABLE):
-            create_table_sql = f"create table if not exists {t['name']} ({', '.join(t['cols'])})"
+        for t in DB_SESSION_TABLE:
+            create_table_sql = f"create table if not exists {DB_SESSION_TABLE['name']} ({', '.join(DB_SESSION_TABLE['cols'])})"
             self.cur.execute(create_table_sql)
 
         self.con.commit()
