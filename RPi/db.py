@@ -41,6 +41,7 @@ class HubDatabase:
 
         for t in DB_SESSION_TABLE:
             create_table_sql = f"create table if not exists {DB_SESSION_TABLE['name']} ({', '.join(DB_SESSION_TABLE['cols'])})"
+            print(create_table_sql)
             self.cur.execute(create_table_sql)
 
         self.con.commit()
