@@ -16,6 +16,9 @@ TFT_eSPI *tft;
 BMA *sensor;
 
 uint32_t sessionId = 30;
+uint32_t step;
+float steplen = 0.75;
+float distance;
 
 volatile uint8_t state;
 volatile bool irqBMA = false;
@@ -36,10 +39,30 @@ void initHikeWatch()
     }
 
     // Stepcounter
-    // Configure IMU
+    Acfg cfg;
+    cfg.odr = BMA4_OUTPUT_DATA_RATE_100HZ;
+    cfg.range = BMA4_ACCEL_RANGE_2G;
+    cfg.bandwidth = BMA4_ACCEL_NORMAL_AVG4;
+    cfg.perf_mode = BMA4_CONTINUOUS_MODE;
+    sensor->accelConfig(cfg);
+    sensor->enableAccel();
+
+    //Configure IMU
+    pinMode(BMA423_INT1, INPUT); 
+    attachInterrupt(BMA423_INT1, [] {
+        // Set interrupt to set irqBMA value to 1
+        irqBMA = true;
+    }, RISING);
+
+    
     // Enable BMA423 step count feature
+    sensor->enableFeature(BMA423_STEP_CNTR, true); // Enable BMA423 step count feature
+    
     // Reset steps
+     sensor->resetStepCounter();
+
     // Turn on step interrupt
+    sensor->enableStepCountInterrupt();
 
     // Side button
     pinMode(AXP202_INT, INPUT_PULLUP);
@@ -235,7 +258,11 @@ void loop()
     case 2:
     {
         /* Hiking session initalisation */
-        
+        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
+        watch->tft->drawString("Starting hike", 45, 100);
+        delay(1000);
+
+        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
         state = 3;
         break;
     }
@@ -243,27 +270,75 @@ void loop()
     {
         /* Hiking session ongoing */
 
-        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
-        watch->tft->drawString("Starting hike", 45, 100);
-        delay(1000);
-        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
+        
+        //watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
+        //watch->tft->drawString("Starting hike", 45, 100);
+        //delay(1000);
+        
+        //watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
 
         watch->tft->setCursor(45, 70);
-        watch->tft->print("Steps: 0");
+        watch->tft->print("Steps: ");
+        watch->tft->print(step);
 
         watch->tft->setCursor(45, 100);
-        watch->tft->print("Dist: 0 km");
-
+        /*if (distance < 1000) {
+            watch->tft->print("Dist: ");
+            watch->tft->print(distance);
+            watch->tft->print("m");
+        }
+        else if (distance > 1000) {*/
+            watch->tft->print("Dist: ");
+            watch->tft->print(distance/1000);  
+            watch->tft->print("km");         
+        //}
+        
         last = millis();
         updateTimeout = 0;
-
         //reset step-counter
-        sensor->resetStepCounter();
+        if (irqBMA) {
+            irqBMA = false;
+            bool rlst;
+            do {
+                // Read the BMA423 interrupt status,
+                // need to wait for it to return to true before continuing
+                rlst =  sensor->readInterrupt();
+            } while (!rlst);
+            // Check if it is a step interrupt
+            if (sensor->isStepCounter()) {
+                step = sensor->getCounter();
+                //step++;
+                distance = step * steplen;
+                
+            }
+
+        }
+        //delay(20);
+        if (irqButton) {
+            irqButton = false;
+            watch->power->readIRQ();
+            if (state == 3)
+            {
+                state = 4;
+            }
+            watch->power->clearIRQ();
+            }
         break;
     }
     case 4:
     {
+        step = 0;
+        distance = 0;
+        sensor->resetStepCounter();
+        
         //Save hiking session data
+        saveIdToFile(sessionId);
+        saveStepsToFile(step);
+        saveDistanceToFile(distance);
+        sessionStored = true;
+
+        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
+        watch->tft->drawString("Stopping hike", 45, 100);
         delay(1000);
         state = 1;  
         break;
