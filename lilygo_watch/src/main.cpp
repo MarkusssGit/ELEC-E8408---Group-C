@@ -258,6 +258,8 @@ void loop()
         updateTimeout = 0;
 
         //reset step-counter
+        sensor->resetStepCounter();
+        break;
     }
     case 4:
     {
