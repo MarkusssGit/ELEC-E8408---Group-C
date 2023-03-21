@@ -102,11 +102,11 @@ void sendSessionBT()
     // Sending session id
     sendDataBT(LITTLEFS, "/id.txt");
     SerialBT.write(';');
-    // Sending steps
-    sendDataBT(LITTLEFS, "/steps.txt");
-    SerialBT.write(';');
     // Sending distance
     sendDataBT(LITTLEFS, "/distance.txt");
+    SerialBT.write(';');
+    // Sending steps
+    sendDataBT(LITTLEFS, "/steps.txt");
     SerialBT.write(';');
     // Send connection termination char
     SerialBT.write('\n');
@@ -130,7 +130,7 @@ void saveStepsToFile(uint32_t step_count)
 void saveDistanceToFile(float distance)
 {
     char buffer[10];
-    itoa(distance, buffer, 10);
+    itoa(distance/1000, buffer, 10);
     writeFile(LITTLEFS, "/distance.txt", buffer);
 }
 
@@ -327,17 +327,16 @@ void loop()
     }
     case 4:
     {
-        step = 0;
-        distance = 0;
-        sensor->resetStepCounter();
-        
         //Save hiking session data
         saveIdToFile(sessionId);
         saveStepsToFile(step);
         saveDistanceToFile(distance);
         sessionStored = true;
-
-        watch->tft->fillRect(0, 0, 240, 240, TFT_BLACK);
+        step = 0;
+        distance = 0;
+        sensor->resetStepCounter();
+        watch->tft->fillRect
+        (0, 0, 240, 240, TFT_BLACK);
         watch->tft->drawString("Stopping hike", 45, 100);
         delay(1000);
         state = 1;  
