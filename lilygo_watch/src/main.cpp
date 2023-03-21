@@ -4,7 +4,6 @@
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
-
 using namespace fs;
 
 // Bluetooth Serial object
@@ -130,7 +129,7 @@ void saveStepsToFile(uint32_t step_count)
 void saveDistanceToFile(float distance)
 {
     char buffer[10];
-    itoa(distance/1000, buffer, 10);
+    sprintf(buffer, "%2f", distance/1000);
     writeFile(LITTLEFS, "/distance.txt", buffer);
 }
 
