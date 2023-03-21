@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        canvas {
+        border:1px solid #d3d3d3;
+        background-color: #f1f1f1;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>ELEC-E8408</title>
+</head>
+<body onload="startGame()">
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/events');
+        $('#Add').click(function(){
+            socket.emit('AddE', {V1:$('#V1').val(), V2:$('#V2').val()});
+        })
+        socket.on('result', function(msg){
+            $('#res').html('Result: '+msg.result);
+        })
+    });
+
+</script>
+<div>
+    <label for="V1">Val 1:</label>
+    <input type="text" id="V1"><br><br>
+    <label for="V2">Val 2:</label>
+    <input type="text" id="V2"><br><br>
+    <button id='Add'>Add</button><br><br>
+    <text id="res">Result: </text>
+</div>
+</body>
+</html>
