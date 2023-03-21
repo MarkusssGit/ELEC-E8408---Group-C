@@ -9,7 +9,7 @@ DB_SESSION_TABLE = {
     "name": "sessions",
     "cols": [
         "session_id integer PRIMARY KEY",
-        "km integer",
+        "km float",
         "steps integer",
         "burnt_kcal integer",
     ]
